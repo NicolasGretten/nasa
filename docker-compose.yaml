@@ -1,0 +1,32 @@
+version: '3'
+services:
+  spark:
+    container_name: spark
+    image: jupyter/all-spark-notebook:latest
+    environment:
+      - PYSPARK_DRIVER_PYTHON=jupyter
+      - PYSPARK_DRIVER_PYTHON_OPTS=notebook
+#    command: start-notebook.sh --ServerApp.password='sha1:7d93500c86ae587b3d9f4bf1b8cec36f221c8183'
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/notebooks
+    depends_on:
+      - mysql
+    links:
+      - 'mysql'
+
+
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: stardb
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./sql_script.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./star_classification.csv:/docker-entrypoint-initdb.d/data.csv
+    command: --local-infile=1 --init-file /docker-entrypoint-initdb.d/init.sql
